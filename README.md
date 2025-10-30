@@ -38,6 +38,3 @@ This sandbox demonstrates how a reverse-proxy load balancer (NGINX) can distribu
              │   PostgreSQL DB  │
              │ (appdb, appuser) │
              └──────────────────┘
-
-
-

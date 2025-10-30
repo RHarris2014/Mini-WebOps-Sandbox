@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: postgres
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks: [ webnet ]
+
+  app1:
+    build: ./app-java
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/appdb
+      SPRING_DATASOURCE_USERNAME: appuser
+      SPRING_DATASOURCE_PASSWORD: Password
+    depends_on: [ db ]
+    networks: [ webnet ]
+
+  app2:
+    build: ./app-java
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/appdb
+      SPRING_DATASOURCE_USERNAME: appuser
+      SPRING_DATASOURCE_PASSWORD: Password
+    depends_on: [ db ]
+    networks: [ webnet ]
+
+  proxy:
+    build:
+      context: ./proxy
+    image: nginx:1.27-alpine
+    ports:
+      - "8080:80"
+    depends_on:
+      - app1
+      - app2
+    restart: unless-stopped
+    networks: [ webnet ]
+    volumes:
+      - ./logs:/var/log/nginx
+
+networks:
+  webnet:
+    driver: bridge
